@@ -1,0 +1,191 @@
+import csv
+import os
+
+FILE_NAME = "students.csv"
+
+# ---------------- FILE HANDLING ----------------
+def initialize_file():
+    if not os.path.exists(FILE_NAME):
+        with open(FILE_NAME, mode="w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Roll", "Name", "Age", "Course", "Marks"])
+
+
+def load_students():
+    students = []
+    with open(FILE_NAME, mode="r") as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            students.append(row)
+    return students
+
+
+def save_students(students):
+    with open(FILE_NAME, mode="w", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=["Roll", "Name", "Age", "Course", "Marks"])
+        writer.writeheader()
+        writer.writerows(students)
+
+
+# ---------------- INPUT VALIDATION ----------------
+def input_int(prompt):
+    while True:
+        try:
+            return int(input(prompt))
+        except ValueError:
+            print("❌ Enter a valid number.")
+
+
+def input_marks(prompt):
+    while True:
+        marks = input_int(prompt)
+        if 0 <= marks <= 100:
+            return marks
+        print("❌ Marks must be between 0 and 100.")
+
+
+# ---------------- CRUD OPERATIONS ----------------
+def add_student(students):
+    roll = input("Enter Roll Number: ")
+
+    for s in students:
+        if s["Roll"] == roll:
+            print("❌ Roll number already exists.")
+            return
+
+    name = input("Enter Name: ")
+    age = input_int("Enter Age: ")
+    course = input("Enter Course: ")
+    marks = input_marks("Enter Marks: ")
+
+    students.append({
+        "Roll": roll,
+        "Name": name,
+        "Age": age,
+        "Course": course,
+        "Marks": marks
+    })
+
+    save_students(students)
+    print("✅ Student added successfully.")
+
+
+def view_students(students):
+    if not students:
+        print("No records found.")
+        return
+
+    print("\n{:<10} {:<15} {:<5} {:<15} {:<6}".format(
+        "Roll", "Name", "Age", "Course", "Marks"))
+    print("-" * 55)
+
+    for s in students:
+        print("{:<10} {:<15} {:<5} {:<15} {:<6}".format(
+            s["Roll"], s["Name"], s["Age"], s["Course"], s["Marks"]))
+
+
+def search_student(students):
+    roll = input("Enter Roll Number to search: ")
+    for s in students:
+        if s["Roll"] == roll:
+            print("\nStudent Found:")
+            for key, value in s.items():
+                print(f"{key}: {value}")
+            return
+    print("❌ Student not found.")
+
+
+def update_student(students):
+    roll = input("Enter Roll Number to update: ")
+    for s in students:
+        if s["Roll"] == roll:
+            print("Leave blank to keep existing value.")
+            name = input(f"Name ({s['Name']}): ") or s["Name"]
+            age = input(f"Age ({s['Age']}): ") or s["Age"]
+            course = input(f"Course ({s['Course']}): ") or s["Course"]
+            marks = input(f"Marks ({s['Marks']}): ") or s["Marks"]
+
+            s.update({
+                "Name": name,
+                "Age": age,
+                "Course": course,
+                "Marks": marks
+            })
+
+            save_students(students)
+            print("✅ Student updated successfully.")
+            return
+    print("❌ Student not found.")
+
+
+def delete_student(students):
+    roll = input("Enter Roll Number to delete: ")
+    for s in students:
+        if s["Roll"] == roll:
+            students.remove(s)
+            save_students(students)
+            print("✅ Student deleted successfully.")
+            return
+    print("❌ Student not found.")
+
+
+# ---------------- SORTING ----------------
+def sort_students(students):
+    print("1. Sort by Name")
+    print("2. Sort by Marks")
+    print("3. Sort by Roll Number")
+
+    choice = input("Choose option: ")
+
+    if choice == "1":
+        students.sort(key=lambda x: x["Name"])
+    elif choice == "2":
+        students.sort(key=lambda x: int(x["Marks"]))
+    elif choice == "3":
+        students.sort(key=lambda x: x["Roll"])
+    else:
+        print("Invalid choice.")
+        return
+
+    view_students(students)
+
+
+# ---------------- MENU ----------------
+def menu():
+    initialize_file()
+    students = load_students()
+
+    while True:
+        print("\n--- Student Management System ---")
+        print("1. Add Student")
+        print("2. View Students")
+        print("3. Search Student")
+        print("4. Update Student")
+        print("5. Delete Student")
+        print("6. Sort Students")
+        print("7. Exit")
+
+        choice = input("Enter choice: ")
+
+        if choice == "1":
+            add_student(students)
+        elif choice == "2":
+            view_students(students)
+        elif choice == "3":
+            search_student(students)
+        elif choice == "4":
+            update_student(students)
+        elif choice == "5":
+            delete_student(students)
+        elif choice == "6":
+            sort_students(students)
+        elif choice == "7":
+            print("👋 Exiting Student Management System.")
+            break
+        else:
+            print("❌ Invalid choice.")
+
+
+# ---------------- RUN PROGRAM ----------------
+if __name__ == "__main__":
+    menu()
